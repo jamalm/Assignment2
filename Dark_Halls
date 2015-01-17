@@ -1,0 +1,34 @@
+/*
+Player player;
+AI ghoul;
+AI beast;
+AI imp;
+*/
+void setup()
+{
+  size(750,750);
+  objects.add(new Player(width/2, height-10);
+  //player spawn
+  //p1pos = new PVector(width/2,height - 10);
+  //player = new Player(p1pos);
+  
+  //AI spawn TEST
+  //ghoul = new AI();
+  //imp = new AI();
+  //beast = new AI();
+}
+
+ArrayList<GameObject> objects = new ArrayList<GameObject>();
+
+
+void draw()
+{
+  update();
+  player.update();
+  
+}
+
+void update()
+{
+  background(0);
+}
