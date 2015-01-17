@@ -1,0 +1,22 @@
+class AI extends GameObject
+{
+  //fields
+  
+  
+  //constructors
+  AI()
+  {
+    
+  }
+  
+  //methods
+  void display()
+  {
+    
+  }
+  
+  void update()
+  {
+    
+  }
+}
