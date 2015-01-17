@@ -1,0 +1,5 @@
+class GameObject
+{
+  PVector p1pos;
+  float theta;
+}
