@@ -1,34 +1,132 @@
-/*
-Player player;
-AI ghoul;
-AI beast;
-AI imp;
-*/
+Player p;
+Maze maze;
+
+boolean devMode = true;
+boolean sketchFullScreen() {
+  return ! devMode;
+}
+;
 void setup()
 {
-  size(750,750);
-  objects.add(new Player(width/2, height-10);
-  //player spawn
-  //p1pos = new PVector(width/2,height - 10);
-  //player = new Player(p1pos);
+  if (devMode)
+  {
+    size(800, 600);
+  }
+  else
+  {
+    size(displayWidth, displayHeight);
+  }
+  XML xml = loadXML("arcade.xml");
+  XML[] children = xml.getChildren("player");
+  XML playerXML = children[0];
+  p = new Player(playerXML);
   
-  //AI spawn TEST
-  //ghoul = new AI();
-  //imp = new AI();
-  //beast = new AI();
+  objects.add(new AI(200,0,0));
+  objects.add(new AI(0,200,0));
+  objects.add(new AI(0,0,200));
+  maze = new Maze();
+  for(int i = 0;i<(maze.mazeSize.x*maze.mazeSize.y);i++) { 
+    maze.grid[i] = 0;
+  }
+  maze.DigMaze();
+  maze.grid[1*(int)maze.mazeSize.x+1] = 2;
+  maze.grid[47*(int)maze.mazeSize.x] = 1;
+  
+  for (maze.mazePos.y = 0; maze.mazePos.y<maze.mazeSize.y; maze.mazePos.y++ )  
+   for (maze.mazePos.x = 0; maze.mazePos.x<maze.mazeSize.x; maze.mazePos.x++ )  
+ 
+      switch( (int)maze.grid[(int)maze.mazePos.y*(int)maze.mazeSize.x+(int)maze.mazePos.x] ) { 
+        case 0: noStroke(); fill(0); rect(maze.mazePos.x*maze.blockSize,maze.mazePos.y*maze.blockSize,maze.mazePos.x*maze.blockSize+maze.blockSize,maze.mazePos.y*maze.blockSize+maze.blockSize); break; 
+        case 2: stroke(255); fill(0); rect(maze.mazePos.x*maze.blockSize,maze.mazePos.y*maze.blockSize,maze.mazePos.x*maze.blockSize+maze.blockSize,maze.mazePos.y*maze.blockSize+maze.blockSize); break; 
+        case 1: stroke(255); fill(255); rect(maze.mazePos.x*maze.blockSize,maze.mazePos.y*maze.blockSize,maze.mazePos.x*maze.blockSize+maze.blockSize,maze.mazePos.y*maze.blockSize+maze.blockSize); break; 
+      }; 
+ 
 }
 
 ArrayList<GameObject> objects = new ArrayList<GameObject>();
+boolean[] keys = new boolean[526];
 
 
 void draw()
 {
-  update();
-  player.update();
+  background(0);
+  GameObject temp;
+  for(int i=0;i<objects.size();i++)
+  {
+    temp = objects.get(i);
+    temp.display();
+    temp.move();
+    temp.update();
+  }
+  
+  p.display();
+  p.update();
+  
+  
+  //maze.intCount = ValidCount(maze.grid, maze.mazePos.x, maze.mazePos.y);
   
 }
 
-void update()
+void keyPressed()
 {
-  background(0);
+  //set keys to true 
+  keys[keyCode] = true;
 }
+
+void keyReleased()
+{
+  //set keys to false
+  keys[keyCode] = false;
+}
+
+
+boolean checkKey(char theKey)
+{
+  return keys[Character.toUpperCase(theKey)];
+}
+
+char buttonNameToKey(XML xml, String buttonName)
+{
+  String value =  xml.getChild(buttonName).getContent();
+  if ("LEFT".equalsIgnoreCase(value))
+  {
+    return LEFT;
+  }
+  if ("RIGHT".equalsIgnoreCase(value))
+  {
+    return RIGHT;
+  }
+  if ("UP".equalsIgnoreCase(value))
+  {
+    return UP;
+  }
+  if ("DOWN".equalsIgnoreCase(value))
+  {
+    return DOWN;
+  }
+  //.. Others to follow
+  return value.charAt(0);  
+}
+
+int ValidCount(float[] mazegrid, float mazemazePosx, float mazemazePosy) 
+  { 
+    int intResult = 0; 
+   
+    intResult += ValidMove(maze.grid, maze.mazePos.x,maze.mazePos.y-2); 
+    intResult += ValidMove(maze.grid, maze.mazePos.x+2,maze.mazePos.y); 
+    intResult += ValidMove(maze.grid, maze.mazePos.x, maze.mazePos.y+2); 
+    intResult += ValidMove(maze.grid, maze.mazePos.x-2,maze.mazePos.y); 
+   
+    return intResult; 
+  } 
+  
+  int ValidMove(float[] grid, float mazePosx, float mazePosy) 
+  { 
+    int intResult = 0; 
+    
+    if (mazePosx>=0.0 && mazePosx<maze.mazeSize.x && mazePosy>=0.0 && mazePosy<maze.mazeSize.y && grid[(int)mazePosy*(int)maze.mazeSize.x+(int)mazePosx] == 0.0) 
+    {
+      intResult = 1; 
+    }
+    return intResult; 
+  } 
