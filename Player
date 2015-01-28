@@ -1,69 +1,90 @@
-class Player extends GameObject
+class Player
 {
-  //fields 
   PVector pos;
-  float theta;
-  
-  //constructors
-  Player(PVector p1pos)
+  PVector dir;
+  char up;
+  char down;
+  char left;
+  char right;
+  char start;
+  char button1;
+  char button2;
+    
+  Player()
   {
-    this.pos = p1pos;
-    theta = 0;
+    pos = new PVector(width / 2, height / 2);
+    dir = new PVector(20,10);
+  }
+  
+  Player(char up, char down, char left, char right, char start, char button1, char button2)
+  {
+    this();
+    this.up = up;
+    this.down = down;
+    this.left = left;
+    this.right = right;
+    this.start = start;
+    this.button1 = button1;
+    this.button2 = button2;
+  }
+  
+  Player(XML xml)
+  {
+    this(buttonNameToKey(xml, "up"), buttonNameToKey(xml, "down")
+        , buttonNameToKey(xml, "left")
+        , buttonNameToKey(xml, "right")
+        , buttonNameToKey(xml, "start")
+        , buttonNameToKey(xml, "button1")
+        , buttonNameToKey(xml, "button2")
+        );
+  }
+  
+  void update()
+  {
+    if (checkKey(up))
+    {
+      pos.y -= 1;
+      dir.x = 20;
+      dir.y = 10;
+    }
+    if (checkKey(down))
+    {
+      pos.y += 1;
+      dir.x = 20;
+      dir.y = 10;
+    }
+    if (checkKey(left))
+    {
+      pos.x -= 1;
+      dir.x = 10;
+      dir.y = 20;
+    }    
+    if (checkKey(right))
+    {
+      pos.x += 1;
+      dir.x = 10;
+      dir.y = 20;
+    }
+    if (checkKey(start))
+    {
+      println("Player start");
+    }
+    if (checkKey(button1))
+    {
+      println("Player button 1");
+    }
+    if (checkKey(button2))
+    {
+      println("Player button 2");
+    }    
   }
   
   //methods
   void display()
   {
-    pushMatrix();
-    translate(pos.x,pos.y);
-    rotate(theta);
-    
+    stroke(0);
     fill(255);
-    ellipse(pos.x,pos.y,25,10);
+    ellipse(pos.x,pos.y,dir.x,dir.y);
     ellipse(pos.x,pos.y,10,10);
-    
-    popMatrix();
-  }
-  
-  void update()
-  {
-    display();
-    move();
-  }
-  
-  void move()
-  {
-    float lx, ly;
-    
-    lx = sin(theta);
-    ly = -cos(theta);
-    
-    if(keyPressed)
-    {
-      switch(key)
-      {
-        case 'w':
-        {
-          pos.x = pos.x + lx;
-          pos.y = pos.y + ly;
-          break;
-        }
-        case 's':
-        {
-          pos.y = pos.y + 1;
-          break;
-        }
-        case 'a':
-        {
-          theta -= 0.1f;
-          break;
-        }
-        case 'd':
-        {
-          theta += 0.1f;
-          break;
-        }//end case
-      }//end switch
-    }//end if
   }
 }
