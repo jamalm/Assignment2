@@ -1,5 +1,20 @@
 class GameObject
 {
-  PVector p1pos;
+  PVector pos;
   float theta;
+  
+  void display()
+  {
+    println("Display is running");
+  }
+  
+  void update()
+  {
+    
+  }
+  
+  void move()
+  {
+    
+  }
 }
