@@ -1,0 +1,75 @@
+class Maze
+{
+  //fields
+  float[] grid;
+  PVector mazeSize;
+  PVector mazePos;
+  int blockSize;
+  int g_intDepth;
+  int intCount;
+  //constructors
+  Maze()
+  {
+    mazeSize =  new PVector(49,49);
+    mazePos = new PVector(1,1);
+    grid[1*(int)maze.mazeSize.x+1] = 2;
+    grid[47*(int)maze.mazeSize.x] = 1;
+  }
+  Maze(int intCount)
+  {
+    
+    blockSize = 15;
+    g_intDepth = 0;
+    this.intCount = ValidCount(grid, mazePos.x, mazePos.y);
+  }
+  
+  //methods
+  void DigMaze() 
+  { 
+    int newx; 
+    int newy; 
+    
+ 
+    g_intDepth = g_intDepth + 1; 
+ 
+    //grid[(int)mazePos.y*(int)mazeSize.x+(int)mazePos.x] = 1; 
+ 
+     
+ 
+    while (intCount > 0) { 
+      switch (int(random(1)*4)) { 
+        case 0: 
+          if (ValidMove(grid, mazePos.x,mazePos.y-2) > 0){ 
+            grid[((int)mazePos.y-1)*(int)mazeSize.x+(int)mazePos.x] = 1; 
+            mazePos.y -= 2;
+            DigMaze(); 
+          } 
+          break; 
+        case 1: 
+          if (ValidMove(grid, mazePos.x+2,mazePos.y) > 0) { 
+            grid[(int)mazePos.y*(int)mazeSize.x+(int)mazePos.x+1] = 1; 
+            mazePos.x+=2;
+            DigMaze (); 
+          } 
+          break; 
+        case 2: 
+          if (ValidMove(grid, mazePos.x,mazePos.y+2) > 0) { 
+            grid[((int)mazePos.y+1)*(int)mazeSize.x+(int)mazePos.x] = 1; 
+            mazePos.y+=2;
+            DigMaze (); 
+          } 
+          break; 
+        case 3: 
+          if (ValidMove(grid, mazePos.x-2,mazePos.y) > 0) { 
+            grid[(int)mazePos.y*(int)mazeSize.x+(int)mazePos.x-1] = 1; 
+            mazePos.x-=2;
+            DigMaze (); 
+          } 
+          break; 
+      } // end switch 
+      intCount = ValidCount(grid, mazePos.x, mazePos.y); 
+    } // end while 
+ 
+    g_intDepth = g_intDepth - 1; 
+  } // end DigMaze() 
+}
