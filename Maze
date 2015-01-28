@@ -1,75 +1,201 @@
 class Maze
 {
-  //fields
-  float[] grid;
-  PVector mazeSize;
-  PVector mazePos;
-  int blockSize;
-  int g_intDepth;
-  int intCount;
-  //constructors
-  Maze()
-  {
-    mazeSize =  new PVector(49,49);
-    mazePos = new PVector(1,1);
-    grid[1*(int)maze.mazeSize.x+1] = 2;
-    grid[47*(int)maze.mazeSize.x] = 1;
-  }
-  Maze(int intCount)
-  {
-    
-    blockSize = 15;
-    g_intDepth = 0;
-    this.intCount = ValidCount(grid, mazePos.x, mazePos.y);
+  int x,y,w;
+  int cellsAcross;
+  ArrayList cells;
+  
+  int destX;
+  int destY;
+  
+  int cellTotal;
+  int cellsVisited;
+  int cellCurrent;
+  int[] cellStack = new int[1];
+  int move;
+  
+  boolean finished;
+  
+  Maze(int x, int y, int w, int across) {
+    this.x = x;
+    this.y = y;
+    this.w = w;
+    cellsAcross = across;
+  
+    move = w/cellsAcross;
+    cellTotal = cellsAcross*cellsAcross;
+    cellsVisited = 1;
+    cellCurrent = cellTotal-1;
+    cellStack[0] = cellCurrent;
+  
+    cells = new ArrayList();
+    for (int i = 0; i < cellsAcross; i++) 
+    {
+      for (int j = 0; j < cellsAcross; j++) 
+      {
+        Cell cell = new Cell(x+j*move,y+i*move,move);
+        cells.add(cell);
+      }
+    }
+    finished = false;
+  
+    Cell previous = (Cell) cells.get(cells.size()-1);
+    previous.marked=true;
+  
+    destX = x + w - move;
+    destY = y + w - move;
   }
   
-  //methods
-  void DigMaze() 
-  { 
-    int newx; 
-    int newy; 
-    
- 
-    g_intDepth = g_intDepth + 1; 
- 
-    //grid[(int)mazePos.y*(int)mazeSize.x+(int)mazePos.x] = 1; 
- 
-     
- 
-    while (intCount > 0) { 
-      switch (int(random(1)*4)) { 
-        case 0: 
-          if (ValidMove(grid, mazePos.x,mazePos.y-2) > 0){ 
-            grid[((int)mazePos.y-1)*(int)mazeSize.x+(int)mazePos.x] = 1; 
-            mazePos.y -= 2;
-            DigMaze(); 
-          } 
-          break; 
-        case 1: 
-          if (ValidMove(grid, mazePos.x+2,mazePos.y) > 0) { 
-            grid[(int)mazePos.y*(int)mazeSize.x+(int)mazePos.x+1] = 1; 
-            mazePos.x+=2;
-            DigMaze (); 
-          } 
-          break; 
-        case 2: 
-          if (ValidMove(grid, mazePos.x,mazePos.y+2) > 0) { 
-            grid[((int)mazePos.y+1)*(int)mazeSize.x+(int)mazePos.x] = 1; 
-            mazePos.y+=2;
-            DigMaze (); 
-          } 
-          break; 
-        case 3: 
-          if (ValidMove(grid, mazePos.x-2,mazePos.y) > 0) { 
-            grid[(int)mazePos.y*(int)mazeSize.x+(int)mazePos.x-1] = 1; 
-            mazePos.x-=2;
-            DigMaze (); 
-          } 
-          break; 
-      } // end switch 
-      intCount = ValidCount(grid, mazePos.x, mazePos.y); 
-    } // end while 
- 
-    g_intDepth = g_intDepth - 1; 
-  } // end DigMaze() 
+  void reset(int across) 
+  {
+  
+    cellsAcross = across;
+    move = w / cellsAcross;
+  
+    for (int i = cells.size()-1; i >= 0; i--) 
+    {
+      cells.remove(i);
+    }
+  
+    for (int i = 0; i < cellsAcross; i++) 
+    {
+      for (int j = 0; j < cellsAcross; j++) 
+      {
+        Cell cell = new Cell(x + j * move, y + i * move, move);
+        cells.add(cell);
+      }
+    }
+  
+    Cell previous=(Cell) cells.get(cells.size()-1);
+    previous.marked=true;
+  
+    while (cellStack.length>1) 
+    {
+      cellStack = shorten(cellStack);
+    }
+  
+    cellTotal = cellsAcross * cellsAcross;
+    cellsVisited = 1;
+    cellCurrent = cellTotal - 1;
+    cellStack[0] = cellCurrent;
+    destX = x + w - move;
+    destY = y + w - move;
+    end = false;
+    finished = false;
+    randomSeed(millis());
+  }
+  
+  
+  void display() 
+  {
+    for (int i = 0; i < cells.size(); i++) 
+    {
+      Cell cell = (Cell) cells.get(i);
+      cell.display();
+    }
+  }
+  
+  boolean[] travel(PVector pos) 
+  {
+  
+    int i = cellsAcross * (((int)pos.y-this.y) / move) + (((int)pos.x - this.x) / move);
+    Cell inCell = (Cell) cells.get(i);
+    inCell.visited = min(255, inCell.visited+65);
+    return inCell.walls;
+  }
+  
+  void routeStep() 
+  {
+  
+    //find the current cell's neighbors
+    int gaps = 0;
+  
+    int[] outerCells = {cellCurrent-cellsAcross,cellCurrent+cellsAcross,cellCurrent-1,cellCurrent+1 };
+  
+    //check for edges
+    if (cellCurrent-cellsAcross<0) outerCells[0]=-1;
+    if (cellCurrent+cellsAcross>=cellsAcross*cellsAcross) outerCells[1]=-1;
+    if (cellCurrent%cellsAcross==0) outerCells[2]=-1;
+    if (cellCurrent%cellsAcross==cellsAcross-1) outerCells[3]=-1;
+  
+    //check for previously visited cells
+    for (int i = 0; i < 4; i++) 
+    {
+      if (outerCells[i]!=-1) 
+      {
+        Cell cell = (Cell) cells.get(outerCells[i]);
+        if (cell.marked) 
+        {
+          outerCells[i]=-1;
+        }
+        else 
+        {
+          gaps++;
+        }
+      }
+    }
+  
+    if (gaps > 0) 
+    {
+      int chosen = int(random(gaps));
+      for (int i = 0; i < 4; i++) 
+      {
+        if (outerCells[i]!=-1) 
+        {
+          if (chosen == 0) 
+          {
+            //this is the next cell
+            Cell thisCell = (Cell) cells.get(cellCurrent);
+            Cell nextCell = (Cell) cells.get(outerCells[i]);
+            // thisCell.marked=true;
+            nextCell.marked=true;
+            //let's knock down the 2 adjoining walls
+            if (i==0) 
+            {
+              thisCell.walls[0]=false;
+              nextCell.walls[1]=false;
+            }
+            if (i==1) 
+            {
+              thisCell.walls[1]=false;
+              nextCell.walls[0]=false;
+            }
+            if (i==2) 
+            {
+              thisCell.walls[2]=false;
+              nextCell.walls[3]=false;
+            }
+            if (i==3) 
+            {
+              thisCell.walls[3]=false;
+              nextCell.walls[2]=false;
+            }
+            cellsVisited++;
+            
+            if (cellsVisited == cellTotal) 
+            {
+              finished = true;
+              println(millis()-clock);
+            }
+            cellCurrent = outerCells[i];
+            cellStack = append(cellStack,cellCurrent);
+            stroke(0, 0, 255, 5 + 250 * thisCell.x / width);
+            
+            int w = width/(cellsAcross * 2);
+            
+            line(thisCell.x + move/2, thisCell.y + move/2, nextCell.x + move/2, nextCell.y + move/2);
+            break;
+          }
+          else 
+          {
+            chosen--;
+          }
+        }
+      }
+    }
+    else 
+    {
+      cellCurrent = cellStack[cellStack.length-1];
+      cellStack = shorten(cellStack);
+    }
+  }
 }
