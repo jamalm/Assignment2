@@ -2,6 +2,10 @@ class Player
 {
   PVector pos;
   PVector dir;
+  PVector dest;
+  int speed;
+  int mazeIndex;
+  
   char up;
   char down;
   char left;
@@ -12,11 +16,10 @@ class Player
     
   Player()
   {
-    pos = new PVector(width / 2, height / 2);
-    dir = new PVector(20,10);
+    
   }
   
-  Player(char up, char down, char left, char right, char start, char button1, char button2)
+  Player(char up, char down, char left, char right, char start, char button1, char button2 )
   {
     this();
     this.up = up;
@@ -28,7 +31,7 @@ class Player
     this.button2 = button2;
   }
   
-  Player(XML xml)
+  Player(XML xml, int x, int y)
   {
     this(buttonNameToKey(xml, "up"), buttonNameToKey(xml, "down")
         , buttonNameToKey(xml, "left")
@@ -37,51 +40,115 @@ class Player
         , buttonNameToKey(xml, "button1")
         , buttonNameToKey(xml, "button2")
         );
+    pos = new PVector(x,y);
+    dir = new PVector(20,10);
+    dest = new PVector(pos.x,pos.y);
+    speed = 1;
   }
   
   void update()
   {
-    if (checkKey(up))
+    if (!finished) 
     {
-      pos.y -= 1;
-      dir.x = 20;
-      dir.y = 10;
+      boolean[] walls = maze.travel(pos);
+      
+      if (checkKey(up))
+      {
+        if(!walls[0])
+        {
+          spawn(pos.x, max(maze.move/2, pos.y - maze.move));
+          dir.x = 20;
+          dir.y = 10;
+        }
+      }
+      if (checkKey(down))
+      {
+        if(!walls[1])
+        {
+          spawn(pos.x, min(height - maze.move/2, pos.y + maze.move));
+          dir.x = 20;
+          dir.y = 10;
+        }
+      }
+      if (checkKey(left))
+      {
+        if(!walls[2])
+        {
+          spawn(max(maze.move/2, pos.x - maze.move), pos.y);
+          dir.x = 10;
+          dir.y = 20;
+        }
+      }    
+      if (checkKey(right))
+      {
+        if(!walls[3])
+        {
+          spawn(min(width - maze.move/2, pos.x + maze.move), pos.y);
+          dir.x = 10;
+          dir.y = 20;
+        }
+      }
+      
+      if (checkKey(button1))
+      {
+        println("Player button 1");
+        background(255,245,235);
+        difficulty-=10;
+        maze.reset(difficulty);
+        spawn(maze.x+ maze.move/2, maze.y+maze.move/2);
+      }
+      if (checkKey(button2))
+      {
+        println("Player button 2");
+        background(255,245,235);
+        difficulty+=10;
+        maze.reset(difficulty);
+        spawn(maze.x+ maze.move/2, maze.y+maze.move/2);
+      } 
     }
-    if (checkKey(down))
+    else
     {
-      pos.y += 1;
-      dir.x = 20;
-      dir.y = 10;
+      if (checkKey(start))
+      {
+        println("Player start");
+        background(255,245,235);
+  
+        mazeIndex = (mazeIndex+1) % mazeSize.length;
+        maze.reset(mazeSize[mazeIndex]);
+        spawn(maze.x+ maze.move/2, maze.y+maze.move/2);
+      }
     }
-    if (checkKey(left))
-    {
-      pos.x -= 1;
-      dir.x = 10;
-      dir.y = 20;
-    }    
-    if (checkKey(right))
-    {
-      pos.x += 1;
-      dir.x = 10;
-      dir.y = 20;
-    }
-    if (checkKey(start))
-    {
-      println("Player start");
-    }
-    if (checkKey(button1))
-    {
-      println("Player button 1");
-    }
-    if (checkKey(button2))
-    {
-      println("Player button 2");
-    }    
   }
+  void spawn(float x, float y)
+  {
+    pos.x = x;
+    pos.y = y;
+    dest.x = x;
+    dest.y = y;
+  }
+  
   
   //methods
   void display()
   {
+    if(pos.x < dest.x)
+    {
+      pos.x = min(dest.x,pos.x+speed);
+    }
+    else if(pos.x > dest.x)
+    {
+      pos.x = max(dest.x,pos.x+speed);
+    }
+    
+    if(pos.y < dest.y)
+    {
+      pos.y = min(dest.y,pos.y + speed);
+    }
+    else if(pos.y > dest.y)
+    {
+      pos.y = max(dest.y,pos.y+speed);
+    }
+    
     stroke(0);
     fill(255);
     ellipse(pos.x,pos.y,dir.x,dir.y);
