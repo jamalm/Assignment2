@@ -92,16 +92,13 @@ class Player
       if (checkKey(button1))
       {
         println("Player button 1");
-        background(255,245,235);
-        difficulty-=10;
-        maze.reset(difficulty);
-        spawn(maze.x+ maze.move/2, maze.y+maze.move/2);
+        exit();
       }
       if (checkKey(button2))
       {
         println("Player button 2");
         background(255,245,235);
-        difficulty+=10;
+        difficulty+=2;
         maze.reset(difficulty);
         spawn(maze.x+ maze.move/2, maze.y+maze.move/2);
       } 
@@ -112,7 +109,6 @@ class Player
       {
         println("Player start");
         background(255,245,235);
-  
         mazeIndex = (mazeIndex+1) % mazeSize.length;
         maze.reset(mazeSize[mazeIndex]);
         spawn(maze.x+ maze.move/2, maze.y+maze.move/2);
