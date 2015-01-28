@@ -10,46 +10,41 @@ void setup()
 {
   if (devMode)
   {
-    size(800, 600);
+    size(650, 650);
   }
   else
   {
     size(displayWidth, displayHeight);
   }
-  XML xml = loadXML("arcade.xml");
-  XML[] children = xml.getChildren("player");
-  XML playerXML = children[0];
-  p = new Player(playerXML);
+  
   
   objects.add(new AI(200,0,0));
   objects.add(new AI(0,200,0));
   objects.add(new AI(0,0,200));
-  maze = new Maze();
-  for(int i = 0;i<(maze.mazeSize.x*maze.mazeSize.y);i++) { 
-    maze.grid[i] = 0;
-  }
-  maze.DigMaze();
-  maze.grid[1*(int)maze.mazeSize.x+1] = 2;
-  maze.grid[47*(int)maze.mazeSize.x] = 1;
   
-  for (maze.mazePos.y = 0; maze.mazePos.y<maze.mazeSize.y; maze.mazePos.y++ )  
-   for (maze.mazePos.x = 0; maze.mazePos.x<maze.mazeSize.x; maze.mazePos.x++ )  
- 
-      switch( (int)maze.grid[(int)maze.mazePos.y*(int)maze.mazeSize.x+(int)maze.mazePos.x] ) { 
-        case 0: noStroke(); fill(0); rect(maze.mazePos.x*maze.blockSize,maze.mazePos.y*maze.blockSize,maze.mazePos.x*maze.blockSize+maze.blockSize,maze.mazePos.y*maze.blockSize+maze.blockSize); break; 
-        case 2: stroke(255); fill(0); rect(maze.mazePos.x*maze.blockSize,maze.mazePos.y*maze.blockSize,maze.mazePos.x*maze.blockSize+maze.blockSize,maze.mazePos.y*maze.blockSize+maze.blockSize); break; 
-        case 1: stroke(255); fill(255); rect(maze.mazePos.x*maze.blockSize,maze.mazePos.y*maze.blockSize,maze.mazePos.x*maze.blockSize+maze.blockSize,maze.mazePos.y*maze.blockSize+maze.blockSize); break; 
-      }; 
- 
+  maze = new Maze(width/2-300, height/2-300, 600, mazeSize[0]);
+  
+  XML xml = loadXML("arcade.xml");
+  XML[] children = xml.getChildren("player");
+  XML playerXML = children[0];
+  p = new Player(playerXML,maze.x + maze.move/2, maze.y + maze.move/2);
+  
+  end = false;
+  clock = millis();
 }
 
 ArrayList<GameObject> objects = new ArrayList<GameObject>();
 boolean[] keys = new boolean[526];
 
+int[] mazeSize = {4,8,12,16,20};
+int i = 0;
+boolean end;  
+float clock;  
+    
+int difficulty;  
 
 void draw()
-{
-  background(0);
+{ 
   GameObject temp;
   for(int i=0;i<objects.size();i++)
   {
@@ -59,12 +54,42 @@ void draw()
     temp.update();
   }
   
-  p.display();
-  p.update();
+      p.update();
+  if(!maze.finished)
+  {
+    maze.routeStep();
+  }
   
-  
-  //maze.intCount = ValidCount(maze.grid, maze.mazePos.x, maze.mazePos.y);
-  
+  else
+  {
+    if(!end)
+    {
+      background(255);
+      maze.display();
+      
+      fill(200,255,200);
+      stroke(0,255,0);
+      strokeWeight(3);
+      rect(maze.destX + maze.move/2, maze.destY + maze.move/2, 30,70);
+      
+      p.display();
+      
+      if(p.pos.x > maze.destX && p.pos.y > maze.destY)
+      {
+        end = true;
+      }
+    }
+    else
+    {
+      noStroke();
+      fill(127,255,127,10);
+      rect(0,0,width,height);
+      fill(255);
+      rect(width/6, height/2-125, 4* width / 6 , 250);
+      fill(0);
+      text("Game Over!\nPress Start to Play again!",width/2, height/2);
+    }
+  }
 }
 
 void keyPressed()
@@ -104,29 +129,5 @@ char buttonNameToKey(XML xml, String buttonName)
   {
     return DOWN;
   }
-  //.. Others to follow
   return value.charAt(0);  
 }
-
-int ValidCount(float[] mazegrid, float mazemazePosx, float mazemazePosy) 
-  { 
-    int intResult = 0; 
-   
-    intResult += ValidMove(maze.grid, maze.mazePos.x,maze.mazePos.y-2); 
-    intResult += ValidMove(maze.grid, maze.mazePos.x+2,maze.mazePos.y); 
-    intResult += ValidMove(maze.grid, maze.mazePos.x, maze.mazePos.y+2); 
-    intResult += ValidMove(maze.grid, maze.mazePos.x-2,maze.mazePos.y); 
-   
-    return intResult; 
-  } 
-  
-  int ValidMove(float[] grid, float mazePosx, float mazePosy) 
-  { 
-    int intResult = 0; 
-    
-    if (mazePosx>=0.0 && mazePosx<maze.mazeSize.x && mazePosy>=0.0 && mazePosy<maze.mazeSize.y && grid[(int)mazePosy*(int)maze.mazeSize.x+(int)mazePosx] == 0.0) 
-    {
-      intResult = 1; 
-    }
-    return intResult; 
-  } 
